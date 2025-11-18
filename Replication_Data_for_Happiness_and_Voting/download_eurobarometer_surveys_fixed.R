@@ -1,19 +1,39 @@
 #!/usr/bin/env Rscript
-# Alternative script using manual credential input
-# More reliable than the automated version
+# Fixed script to download Eurobarometer surveys
+# Installs PhantomJS from GitHub (not broken Bitbucket)
 
-# Install gesisdata package if needed
+cat("=======================================================\n")
+cat("Eurobarometer Survey Download Script (Fixed Version)\n")
+cat("=======================================================\n\n")
+
+# Step 1: Install PhantomJS from working source
+cat("Step 1: Installing PhantomJS dependency...\n")
+if (!require("webshot")) {
+  install.packages("webshot")
+}
+library(webshot)
+
+if (!is_phantomjs_installed()) {
+  cat("Installing PhantomJS from GitHub...\n")
+  install_phantomjs()
+  cat("✓ PhantomJS installed successfully\n\n")
+} else {
+  cat("✓ PhantomJS already installed\n\n")
+}
+
+# Step 2: Install gesisdata package
+cat("Step 2: Installing gesisdata package...\n")
 if (!require("gesisdata")) {
   install.packages("gesisdata")
 }
-
 library(gesisdata)
+cat("✓ gesisdata package loaded\n\n")
 
 # Set download directory
 download_dir <- file.path(getwd(), "Raw Data", "EB")
 dir.create(download_dir, recursive = TRUE, showWarnings = FALSE)
 
-# List of all 34 ZA study numbers (without "ZA" prefix for gesisdata)
+# List of all 34 ZA study numbers
 study_ids <- c(
   "3521",  # Trend
   "2828",  # 44.2
@@ -51,18 +71,15 @@ study_ids <- c(
   "5932"   # 82.3
 )
 
-cat("=======================================================\n")
-cat("Eurobarometer Survey Download Script (Manual Version)\n")
-cat("=======================================================\n\n")
-cat("This script will download", length(study_ids), "Eurobarometer surveys\n\n")
+cat("Step 3: Downloading", length(study_ids), "Eurobarometer surveys\n")
+cat("Download directory:", download_dir, "\n\n")
 
 # Prompt for credentials once
 cat("Enter your GESIS credentials:\n")
 gesis_email <- readline(prompt = "Email: ")
 gesis_password <- readline(prompt = "Password: ")
 
-cat("\nStarting downloads...\n")
-cat("Download directory:", download_dir, "\n\n")
+cat("\nStarting downloads...\n\n")
 
 # Download all surveys
 successful <- 0
@@ -70,7 +87,7 @@ failed_studies <- c()
 
 for (i in seq_along(study_ids)) {
   study_id <- study_ids[i]
-  cat(sprintf("\n[%d/%d] Downloading ZA%s...\n", i, length(study_ids), study_id))
+  cat(sprintf("[%d/%d] Downloading ZA%s...\n", i, length(study_ids), study_id))
 
   tryCatch({
     gesis_download(
@@ -83,20 +100,25 @@ for (i in seq_along(study_ids)) {
       msg = FALSE
     )
     successful <- successful + 1
-    cat(sprintf("✓ Successfully downloaded ZA%s\n", study_id))
+    cat(sprintf("✓ Successfully downloaded ZA%s\n\n", study_id))
 
   }, error = function(e) {
     failed_studies <- c(failed_studies, study_id)
-    cat(sprintf("✗ Failed: %s\n", e$message))
+    cat(sprintf("✗ Failed: %s\n\n", e$message))
   })
 
+  # Delay to avoid overwhelming the server
   Sys.sleep(2)
 }
 
 # Summary
-cat("\n=======================================================\n")
+cat("=======================================================\n")
 cat(sprintf("Summary: %d successful, %d failed\n", successful, length(failed_studies)))
 if (length(failed_studies) > 0) {
   cat("Failed studies:", paste0("ZA", failed_studies, collapse = ", "), "\n")
+  cat("\nYou can download these manually from:\n")
+  for (study in failed_studies) {
+    cat(sprintf("  https://search.gesis.org/research_data/ZA%s\n", study))
+  }
 }
 cat("=======================================================\n")

@@ -57,15 +57,9 @@ cat("=======================================================\n\n")
 cat("This script will download", length(za_numbers), "Eurobarometer surveys\n")
 cat("Download directory:", download_dir, "\n\n")
 
-# The gesisdata package requires you to enter your credentials interactively
-# OR you can set them as environment variables beforehand:
-# Sys.setenv(GESIS_USER = "your_email@example.com")
-# Sys.setenv(GESIS_PASS = "your_password")
-
-cat("IMPORTANT: You will be prompted for your GESIS credentials\n")
+cat("IMPORTANT: You will be prompted for your GESIS credentials on first download\n")
 cat("Email: Your GESIS registration email\n")
-cat("Password: Your GESIS password\n")
-cat("Purpose: Select option 5 - 'for scientific research (incl. doctorate)'\n\n")
+cat("Password: Your GESIS password\n\n")
 
 # Attempt to download all surveys
 successful_downloads <- c()
@@ -81,8 +75,9 @@ for (i in seq_along(za_numbers)) {
     gesis_download(
       file_id = study_id,
       download_dir = download_dir,
-      filetype = ".dta",  # Download Stata format
-      purpose = 5  # 5 = for scientific research (incl. doctorate)
+      use = 5,  # 5 = for scientific research (incl. doctorate)
+      convert = FALSE,  # Keep original .dta format instead of converting to .RData
+      reset = (i == 1)  # Prompt for credentials on first download only
     )
     successful_downloads <- c(successful_downloads, za_num)
     cat(sprintf("✓ Successfully downloaded %s\n", za_num))
