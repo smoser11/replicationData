@@ -1,7 +1,7 @@
 
 * replace line 3 using your working directory...
-global path = "/Users/wardg/Dropbox (MIT)/Projects/SWB and Voting/AJPS/Replication Packet/"
-
+  global path = "/Users/sm38679/Documents/GitHub/replicationData/Replication_Data_for_Happiness_and_Voting"
+  
 global raw = "$path/Raw Data"
 global do = "$path/Do Files" 
 global clean = "$path/Clean Data" 
