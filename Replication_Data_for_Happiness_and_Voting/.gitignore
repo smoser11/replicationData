@@ -1,0 +1,24 @@
+# Raw Data - Must be acquired independently (see README files)
+Raw Data/EB/
+Raw Data/BHPS/
+Raw Data/SOEP/
+Raw Data/UKDA-6614-stata/
+
+# macOS
+.DS_Store
+../.DS_Store
+
+# Stata temporary files
+*.stswp
+~*.do.stswp
+
+# Temporary data files created during processing
+bhps_hh.dta
+bhps_long.dta
+ukhls_hh.dta
+ukhls_long.dta
+bhps_ukhls_long.dta
+
+# Log files (optional - uncomment if you don't want to track)
+# Results/*.smcl
+# Results/*.log

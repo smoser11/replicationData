@@ -3,7 +3,7 @@
   global path = "/Users/sm38679/Documents/GitHub/replicationData/Replication_Data_for_Happiness_and_Voting"
   
 global raw = "$path/Raw Data"
-global do = "$path/Do Files" 
+global do = "$path"
 global clean = "$path/Clean Data" 
 
 global bhps = "$raw/BHPS"

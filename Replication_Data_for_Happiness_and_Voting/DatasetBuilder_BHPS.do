@@ -201,7 +201,9 @@ drop var
 
 
  ** Age
-gen age = age_dv if age_dv>0 
+drop age
+cap drop agesq
+gen age = age_dv if age_dv>0
 gen agesq=(age*age)/1000 
 drop if age<18
 
