@@ -9,8 +9,10 @@ library(dplyr)
 library(tidyr)
 
 # Set paths (update these to match your setup)
-BHPS_PATH <- "/Users/sm38679/Documents/GitHub/replicationData/Replication_Data_for_Happiness_and_Voting/Raw Data/bhps"
-CLEAN_PATH <- "/Users/sm38679/Documents/GitHub/replicationData/Replication_Data_for_Happiness_and_Voting/Clean Data"
+# BHPS_PATH <- "/Users/sm38679/Documents/GitHub/replicationData/Replication_Data_for_Happiness_and_Voting/Raw Data/bhps"
+# CLEAN_PATH <- "/Users/sm38679/Documents/GitHub/replicationData/Replication_Data_for_Happiness_and_Voting/Clean Data"
+BHPS_PATH <- "/home/smoser/Documents/GitHub/replicationData/Replication_Data_for_Happiness_and_Voting/Raw Data/bhps"
+CLEAN_PATH <- "/home/smoser/Documents/GitHub/replicationData/Replication_Data_for_Happiness_and_Voting/Clean Data"
 
 cat("=========================================\n")
 cat("Building BHPS Dataset\n")
@@ -213,13 +215,27 @@ combined <- combined %>%
   )
 
 # Region
+# gor_dv exists in UKHLS, but not in early BHPS waves
+# Need to handle both gor_dv (UKHLS) and region (BHPS)
+# First, create gor_dv and region if they don't exist
+if (!"gor_dv" %in% names(combined)) {
+  combined$gor_dv <- NA_real_
+}
+if (!"region" %in% names(combined)) {
+  combined$region <- NA_real_
+}
+
 combined <- combined %>%
   mutate(
-    reg = gor_dv,
+    reg = case_when(
+      !is.na(gor_dv) & gor_dv > 0 ~ gor_dv,
+      !is.na(region) & region > 0 ~ region,
+      TRUE ~ NA_real_
+    ),
     reg = ifelse(reg %in% c(-10:-1), 99, reg),
     reg = ifelse(reg == 13, 99, reg)
   ) %>%
-  filter(reg != 12)  # Drop Northern Ireland
+  filter(is.na(reg) | reg != 12)  # Drop Northern Ireland
 
 # Life satisfaction
 combined <- combined %>%
@@ -269,6 +285,13 @@ for (i in 1:3) {
   combined[[paste0("fin_fut", i)]] <- as.numeric(combined$finansit_future == i)
 }
 
+# Helper function for mode (define before use)
+modal_value <- function(x) {
+  ux <- unique(x[!is.na(x)])
+  if (length(ux) == 0) return(NA)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+
 # Gender
 combined <- combined %>%
   group_by(id) %>%
@@ -280,13 +303,6 @@ combined <- combined %>%
   group_by(id) %>%
   filter(sd(women, na.rm = TRUE) == 0 | is.na(sd(women, na.rm = TRUE))) %>%
   ungroup()
-
-# Helper function for mode
-modal_value <- function(x) {
-  ux <- unique(x[!is.na(x)])
-  if (length(ux) == 0) return(NA)
-  ux[which.max(tabulate(match(x, ux)))]
-}
 
 # *** CRITICAL FIX: Age variable ***
 # The original Stata code dropped age and only used age_dv, which doesn't exist in early BHPS waves
@@ -315,6 +331,14 @@ combined <- combined %>%
   )
 
 # Adults in household
+# Create hhtype and hhtype_dv if they don't exist
+if (!"hhtype" %in% names(combined)) {
+  combined$hhtype <- NA_real_
+}
+if (!"hhtype_dv" %in% names(combined)) {
+  combined$hhtype_dv <- NA_real_
+}
+
 combined <- combined %>%
   mutate(
     adults = case_when(

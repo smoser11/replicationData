@@ -2,8 +2,10 @@
 # Reorganize BHPS and UKHLS files into wave-specific folders
 
 # Set the base directory (update if your extraction path is different)
-BASE_DIR="$HOME/Downloads/UKDA-6614-stata/stata/stata13_se"
-DEST_DIR="/Users/sm38679/Documents/GitHub/replicationData/Replication_Data_for_Happiness_and_Voting/Raw Data/BHPS"
+# BASE_DIR="$HOME/Downloads/UKDA-6614-stata/stata/stata13_se"  # Older version
+BASE_DIR="$HOME/Downloads/UKDA-6614-stata/stata/stata14_se"  # Current version
+# DEST_DIR="/Users/sm38679/Documents/GitHub/replicationData/Replication_Data_for_Happiness_and_Voting/Raw Data/BHPS"
+DEST_DIR="/home/smoser/Documents/GitHub/replicationData/Replication_Data_for_Happiness_and_Voting/Raw Data/bhps"
 
 # Create destination directory
 mkdir -p "$DEST_DIR"
