@@ -293,16 +293,29 @@ modal_value <- function(x) {
 }
 
 # Gender
+# More memory-efficient approach: create women first, then handle modal values separately
+cat("  → Processing gender variable...\n")
 combined <- combined %>%
-  group_by(id) %>%
-  mutate(
-    women = ifelse(sex == 2, 1, ifelse(sex > 0, 0, NA_real_)),
-    women = ifelse(is.na(women), modal_value(women), women)
-  ) %>%
-  ungroup() %>%
-  group_by(id) %>%
-  filter(sd(women, na.rm = TRUE) == 0 | is.na(sd(women, na.rm = TRUE))) %>%
-  ungroup()
+  mutate(women = ifelse(sex == 2, 1, ifelse(sex > 0, 0, NA_real_)))
+
+# Fill missing women values with modal value per person (using data.table for efficiency)
+library(data.table)
+dt <- as.data.table(combined)
+dt[, women_mode := {
+  w <- women[!is.na(women)]
+  if (length(w) > 0) modal_value(w) else NA_real_
+}, by = id]
+dt[is.na(women), women := women_mode]
+dt[, women_mode := NULL]
+
+# Filter out individuals with inconsistent gender coding
+dt[, women_sd := sd(women, na.rm = TRUE), by = id]
+dt <- dt[women_sd == 0 | is.na(women_sd)]
+dt[, women_sd := NULL]
+
+combined <- as_tibble(dt)
+rm(dt)
+gc()
 
 # *** CRITICAL FIX: Age variable ***
 # The original Stata code dropped age and only used age_dv, which doesn't exist in early BHPS waves
