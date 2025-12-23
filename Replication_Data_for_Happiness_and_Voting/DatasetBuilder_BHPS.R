@@ -215,19 +215,18 @@ combined <- combined %>%
   )
 
 # Region
-# gor_dv exists in UKHLS, but not in early BHPS waves
-# Need to handle both gor_dv (UKHLS) and region (BHPS)
-# First, create gor_dv and region if they don't exist
-if (!"gor_dv" %in% names(combined)) {
-  combined$gor_dv <- NA_real_
-}
-if (!"region" %in% names(combined)) {
-  combined$region <- NA_real_
-}
-
+# *** CRITICAL FIX: After merge, gor_dv becomes gor_dv.x and gor_dv.y ***
+# Both individual and household files have gor_dv, so after inner_join we get suffixes
+# We need to coalesce them (they should be identical since they're from same household)
 combined <- combined %>%
   mutate(
-    # *** CRITICAL FIX: Region variable ***
+    # Coalesce gor_dv from individual (.x) and household (.y) files
+    gor_dv = case_when(
+      !is.na(gor_dv.x) ~ gor_dv.x,
+      !is.na(gor_dv.y) ~ gor_dv.y,
+      TRUE ~ NA_real_
+    ),
+    # Create reg variable from gor_dv
     # The original Stata code uses clonevar which copies ALL values (including negatives)
     # Then it recodes negative values to 99. We must NOT filter out negatives initially.
     reg = gor_dv,
