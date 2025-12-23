@@ -227,13 +227,14 @@ if (!"region" %in% names(combined)) {
 
 combined <- combined %>%
   mutate(
-    reg = case_when(
-      !is.na(gor_dv) & gor_dv > 0 ~ gor_dv,
-      !is.na(region) & region > 0 ~ region,
-      TRUE ~ NA_real_
-    ),
-    reg = ifelse(reg %in% c(-10:-1), 99, reg),
-    reg = ifelse(reg == 13, 99, reg)
+    # *** CRITICAL FIX: Region variable ***
+    # The original Stata code uses clonevar which copies ALL values (including negatives)
+    # Then it recodes negative values to 99. We must NOT filter out negatives initially.
+    reg = gor_dv,
+    # Now recode negative values (-10 to -1) to 99
+    reg = ifelse(!is.na(reg) & reg >= -10 & reg <= -1, 99, reg),
+    # Recode 13 to 99
+    reg = ifelse(!is.na(reg) & reg == 13, 99, reg)
   ) %>%
   filter(is.na(reg) | reg != 12)  # Drop Northern Ireland
 
